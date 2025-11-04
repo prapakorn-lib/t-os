@@ -1,0 +1,38 @@
+[Unit]
+Description=FastAPI Application
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/home/YOUR_USERNAME/fastapi_project
+Environment="PATH=/home/YOUR_USERNAME/fastapi_project/venv/bin"
+ExecStart=/home/YOUR_USERNAME/fastapi_project/venv/bin/uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2
+
+# Restart configuration
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=fastapi
+
+[Install]
+WantedBy=multi-user.target
+
+# Installation Instructions:
+# 1. Replace YOUR_USERNAME with your actual username
+# 2. Update paths if your project is in a different location
+# 3. Copy this file to: sudo cp fastapi.service /etc/systemd/system/
+# 4. Reload systemd: sudo systemctl daemon-reload
+# 5. Enable service: sudo systemctl enable fastapi
+# 6. Start service: sudo systemctl start fastapi
+# 7. Check status: sudo systemctl status fastapi
+# 8. View logs: sudo journalctl -u fastapi -f
