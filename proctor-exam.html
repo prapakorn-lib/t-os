@@ -146,9 +146,37 @@
             font-size: 20px;
         }
 
+        .exam-header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
         .timer {
             font-size: 18px;
             font-weight: bold;
+        }
+
+        .finish-exam-btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background: #2ecc71;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+
+        .finish-exam-btn:hover {
+            background: #27ae60;
+            transform: scale(1.05);
+        }
+
+        .finish-exam-btn:active {
+            transform: scale(0.98);
         }
 
         .exam-content {
@@ -356,6 +384,7 @@
                 <li>โปรดปิดแอปพลิเคชันอื่น ๆ ก่อนเริ่มทำข้อสอบ</li>
                 <li><strong>การคลิกขวา, คัดลอก, และตัดข้อความถูกปิดใช้งาน</strong></li>
                 <li><strong>Developer Tools และการดูซอร์สโค้ดถูกปิดใช้งาน</strong></li>
+                <li><strong style="color: #2ecc71;">✅ เมื่อทำข้อสอบเสร็จ กดปุ่ม "ส่งข้อสอบและออกจากระบบ" ด้านบนขวา</strong></li>
             </ul>
         </div>
 
@@ -368,7 +397,12 @@
     <div class="exam-screen" id="examScreen">
         <div class="exam-header">
             <h2>📝 กำลังสอบ - โปรดอย่าออกจากหน้าจอนี้</h2>
-            <div class="timer" id="timer">⏱️ เวลา: <span id="timeDisplay">00:00:00</span></div>
+            <div class="exam-header-right">
+                <div class="timer" id="timer">⏱️ เวลา: <span id="timeDisplay">00:00:00</span></div>
+                <button class="finish-exam-btn" onclick="finishExam()">
+                    ✅ ส่งข้อสอบและออกจากระบบ
+                </button>
+            </div>
         </div>
         <iframe
             id="examFrame"
@@ -578,6 +612,59 @@
             // แสดงหน้า landing page
             examScreen.classList.remove('active');
             landingPage.style.display = 'block';
+        }
+
+        // Finish exam manually (when user clicks submit button)
+        function finishExam() {
+            // ยืนยันการส่งข้อสอบ
+            const confirmed = confirm(
+                '✅ คุณต้องการส่งข้อสอบและออกจากระบบใช่หรือไม่?\n\n' +
+                'หลังจากนี้คุณจะสามารถกด Submit ใน Google Form ได้โดยไม่ถูกตรวจจับ\n\n' +
+                '⚠️ กรุณาแน่ใจว่าคุณตอบข้อสอบครบถ้วนแล้ว'
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            // หยุดการตรวจจับ violation
+            examStarted = false;
+
+            // หยุด timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            console.log('Exam finished by user. Monitoring disabled.');
+
+            // แสดง alert บอกว่าสามารถส่งข้อสอบได้
+            alert(
+                '✅ ระบบตรวจจับได้ถูกปิดแล้ว!\n\n' +
+                'คุณสามารถกด Submit ใน Google Form ได้เลย\n' +
+                'หลังจากส่งข้อสอบแล้ว หน้าจอจะปิดอัตโนมัติ\n\n' +
+                'ขอบคุณที่ทำข้อสอบค่ะ 🙏'
+            );
+
+            // รอ 3 วินาที แล้วออกจาก fullscreen และกลับหน้า landing
+            setTimeout(() => {
+                // Exit fullscreen
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+
+                // ซ่อนหน้าสอบ แสดงหน้า landing
+                examScreen.classList.remove('active');
+                landingPage.style.display = 'block';
+
+                // แสดงข้อความขอบคุณ
+                setTimeout(() => {
+                    alert('✨ ส่งข้อสอบสำเร็จ!\n\nขอบคุณที่ทำข้อสอบค่ะ');
+                }, 500);
+            }, 3000);
         }
 
         // Lock screen function
