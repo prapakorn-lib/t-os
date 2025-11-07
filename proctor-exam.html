@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบสอบออนไลน์ - Proctor System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .exam-info {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+
+        .exam-info h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            padding: 10px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #667eea;
+            width: 150px;
+        }
+
+        .info-value {
+            color: #555;
+        }
+
+        .warning-box {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .warning-box h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .warning-box ul {
+            margin-left: 20px;
+            color: #856404;
+        }
+
+        .warning-box li {
+            margin: 8px 0;
+        }
+
+        .start-btn {
+            width: 100%;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .start-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Exam Screen */
+        .exam-screen {
+            display: none;
+            width: 100%;
+            height: 100vh;
+            background: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+        }
+
+        .exam-screen.active {
+            display: block;
+        }
+
+        .exam-header {
+            background: #667eea;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .exam-header h2 {
+            font-size: 20px;
+        }
+
+        .timer {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .exam-content {
+            width: 100%;
+            height: calc(100vh - 60px);
+            border: none;
+        }
+
+        /* Lock Screen */
+        .lock-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 10000;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .lock-screen.active {
+            display: flex;
+        }
+
+        .lock-content {
+            text-align: center;
+            color: white;
+            max-width: 600px;
+            padding: 40px;
+        }
+
+        .lock-icon {
+            font-size: 100px;
+            margin-bottom: 30px;
+        }
+
+        .lock-content h1 {
+            color: #ff4757;
+            font-size: 36px;
+            margin-bottom: 20px;
+        }
+
+        .lock-content p {
+            font-size: 18px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+
+        .violation-count {
+            background: #ff4757;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            display: inline-block;
+        }
+
+        .unlock-btn {
+            padding: 15px 40px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: #667eea;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .unlock-btn:hover {
+            background: #5568d3;
+            transform: scale(1.05);
+        }
+
+        /* Fullscreen styles */
+        .exam-screen:-webkit-full-screen {
+            width: 100%;
+            height: 100%;
+        }
+
+        .exam-screen:-moz-full-screen {
+            width: 100%;
+            height: 100%;
+        }
+
+        .exam-screen:fullscreen {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Landing Page -->
+    <div class="container" id="landingPage">
+        <h1>🎓 ระบบสอบออนไลน์</h1>
+
+        <div class="exam-info">
+            <h2>รายละเอียดการสอบ</h2>
+            <div class="info-item">
+                <div class="info-label">ชื่อวิชา:</div>
+                <div class="info-value">แบบทดสอบออนไลน์</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">เวลาในการสอบ:</div>
+                <div class="info-value">ไม่จำกัด</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">ประเภท:</div>
+                <div class="info-value">Google Forms</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">โหมด:</div>
+                <div class="info-value">เต็มจอ (Fullscreen) พร้อมระบบล็อคหน้าจอ</div>
+            </div>
+        </div>
+
+        <div class="warning-box">
+            <h3>⚠️ ข้อควรระวัง</h3>
+            <ul>
+                <li>เมื่อเริ่มทำข้อสอบ ระบบจะเข้าสู่โหมดเต็มจอ</li>
+                <li>ห้ามออกจากหน้าจอการสอบ (ห้ามกด Alt+Tab, Cmd+Tab, หรือเปลี่ยนแท็บ)</li>
+                <li>ห้ามออกจากโหมดเต็มจอ (ห้ามกด ESC หรือ F11)</li>
+                <li>หากออกจากหน้าจอ ระบบจะล็อคการสอบทันที</li>
+                <li>การฝ่าฝืนจะถูกบันทึกและแจ้งเตือนผู้คุมสอบ</li>
+                <li>โปรดปิดแอปพลิเคชันอื่น ๆ ก่อนเริ่มทำข้อสอบ</li>
+            </ul>
+        </div>
+
+        <button class="start-btn" onclick="startExam()">
+            🚀 เริ่มทำข้อสอบ
+        </button>
+    </div>
+
+    <!-- Exam Screen -->
+    <div class="exam-screen" id="examScreen">
+        <div class="exam-header">
+            <h2>📝 กำลังสอบ - โปรดอย่าออกจากหน้าจอนี้</h2>
+            <div class="timer" id="timer">⏱️ เวลา: <span id="timeDisplay">00:00:00</span></div>
+        </div>
+        <iframe
+            id="examFrame"
+            class="exam-content"
+            src=""
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        ></iframe>
+    </div>
+
+    <!-- Lock Screen -->
+    <div class="lock-screen" id="lockScreen">
+        <div class="lock-content">
+            <div class="lock-icon">🔒</div>
+            <h1>หน้าจอถูกล็อค!</h1>
+            <p>คุณได้ออกจากหน้าจอการสอบ</p>
+            <p>การกระทำนี้ถือเป็นการฝ่าฝืนกฎการสอบ</p>
+            <div class="violation-count">
+                การฝ่าฝืน: <span id="violationCount">0</span> ครั้ง
+            </div>
+            <p style="color: #ffa502;">⚠️ การฝ่าฝืนซ้ำอาจส่งผลให้ผลสอบไม่ได้รับการยอมรับ</p>
+            <button class="unlock-btn" onclick="unlockScreen()">
+                🔓 ปลดล็อคและกลับสู่การสอบ
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScItl0AinRfFtbqji88v0IIPORWbThDOhhhBIWmOgNoA5eZEA/viewform?usp=header&embedded=true';
+
+        // State management
+        let examStarted = false;
+        let violations = 0;
+        let startTime = null;
+        let timerInterval = null;
+
+        // DOM Elements
+        const landingPage = document.getElementById('landingPage');
+        const examScreen = document.getElementById('examScreen');
+        const lockScreen = document.getElementById('lockScreen');
+        const examFrame = document.getElementById('examFrame');
+        const violationCountDisplay = document.getElementById('violationCount');
+        const timeDisplay = document.getElementById('timeDisplay');
+
+        // Start exam function
+        async function startExam() {
+            try {
+                // Hide landing page
+                landingPage.style.display = 'none';
+
+                // Show exam screen
+                examScreen.classList.add('active');
+
+                // Load Google Form
+                examFrame.src = GOOGLE_FORM_URL;
+
+                // Request fullscreen
+                if (examScreen.requestFullscreen) {
+                    await examScreen.requestFullscreen();
+                } else if (examScreen.webkitRequestFullscreen) {
+                    await examScreen.webkitRequestFullscreen();
+                } else if (examScreen.msRequestFullscreen) {
+                    await examScreen.msRequestFullscreen();
+                }
+
+                // Mark exam as started
+                examStarted = true;
+                startTime = Date.now();
+
+                // Start timer
+                startTimer();
+
+                // Initialize monitoring
+                initializeMonitoring();
+
+                console.log('Exam started successfully');
+            } catch (error) {
+                console.error('Error starting exam:', error);
+                alert('ไม่สามารถเข้าสู่โหมดเต็มจอได้ โปรดอนุญาตการเข้าถึงและลองอีกครั้ง');
+                landingPage.style.display = 'block';
+                examScreen.classList.remove('active');
+            }
+        }
+
+        // Timer function
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                if (startTime) {
+                    const elapsed = Date.now() - startTime;
+                    const hours = Math.floor(elapsed / 3600000);
+                    const minutes = Math.floor((elapsed % 3600000) / 60000);
+                    const seconds = Math.floor((elapsed % 60000) / 1000);
+
+                    timeDisplay.textContent =
+                        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                }
+            }, 1000);
+        }
+
+        // Lock screen function
+        function lockScreenFunction() {
+            if (!examStarted) return;
+
+            violations++;
+            violationCountDisplay.textContent = violations;
+            lockScreen.classList.add('active');
+
+            console.log(`Screen locked! Violation count: ${violations}`);
+
+            // Log violation (in production, send to server)
+            logViolation('screen_exit');
+        }
+
+        // Unlock screen function
+        function unlockScreen() {
+            lockScreen.classList.remove('active');
+
+            // Request fullscreen again
+            if (document.fullscreenElement === null) {
+                if (examScreen.requestFullscreen) {
+                    examScreen.requestFullscreen();
+                } else if (examScreen.webkitRequestFullscreen) {
+                    examScreen.webkitRequestFullscreen();
+                } else if (examScreen.msRequestFullscreen) {
+                    examScreen.msRequestFullscreen();
+                }
+            }
+        }
+
+        // Initialize monitoring
+        function initializeMonitoring() {
+            // Monitor fullscreen changes
+            document.addEventListener('fullscreenchange', handleFullscreenChange);
+            document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+            document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+            document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+            // Monitor window blur (user switches to another window/tab)
+            window.addEventListener('blur', handleWindowBlur);
+
+            // Monitor visibility change (user switches tabs)
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+
+            // Prevent right-click
+            document.addEventListener('contextmenu', (e) => {
+                if (examStarted) {
+                    e.preventDefault();
+                }
+            });
+
+            // Monitor keyboard shortcuts
+            document.addEventListener('keydown', handleKeyDown);
+        }
+
+        // Handle fullscreen change
+        function handleFullscreenChange() {
+            if (examStarted && !document.fullscreenElement &&
+                !document.webkitFullscreenElement &&
+                !document.mozFullScreenElement &&
+                !document.msFullscreenElement) {
+                console.log('User exited fullscreen');
+                lockScreenFunction();
+            }
+        }
+
+        // Handle window blur
+        function handleWindowBlur() {
+            if (examStarted && !lockScreen.classList.contains('active')) {
+                console.log('Window lost focus');
+                lockScreenFunction();
+            }
+        }
+
+        // Handle visibility change
+        function handleVisibilityChange() {
+            if (examStarted && document.hidden && !lockScreen.classList.contains('active')) {
+                console.log('Page visibility changed to hidden');
+                lockScreenFunction();
+            }
+        }
+
+        // Handle keyboard shortcuts
+        function handleKeyDown(e) {
+            if (!examStarted) return;
+
+            // Prevent Alt+Tab (Windows) - can't fully prevent but can detect
+            if (e.altKey && e.key === 'Tab') {
+                e.preventDefault();
+            }
+
+            // Prevent Cmd+Tab (Mac) - can't fully prevent
+            if (e.metaKey && e.key === 'Tab') {
+                e.preventDefault();
+            }
+
+            // Prevent F11 (fullscreen toggle)
+            if (e.key === 'F11') {
+                e.preventDefault();
+            }
+
+            // Prevent ESC (fullscreen exit)
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            // Prevent Ctrl+W, Ctrl+T, Ctrl+N (close/new tab/window)
+            if ((e.ctrlKey || e.metaKey) && (e.key === 'w' || e.key === 't' || e.key === 'n')) {
+                e.preventDefault();
+            }
+
+            // Prevent F5 and Ctrl+R (refresh)
+            if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && e.key === 'r')) {
+                e.preventDefault();
+            }
+        }
+
+        // Log violation (in production, send to server)
+        function logViolation(type) {
+            const timestamp = new Date().toISOString();
+            const logEntry = {
+                type: type,
+                timestamp: timestamp,
+                violationNumber: violations,
+                timeElapsed: startTime ? Date.now() - startTime : 0
+            };
+
+            console.log('Violation logged:', logEntry);
+
+            // In production, send to server:
+            // fetch('/api/log-violation', {
+            //     method: 'POST',
+            //     headers: { 'Content-Type': 'application/json' },
+            //     body: JSON.stringify(logEntry)
+            // });
+        }
+
+        // Warn before closing/refreshing page
+        window.addEventListener('beforeunload', (e) => {
+            if (examStarted) {
+                e.preventDefault();
+                e.returnValue = '';
+                return '';
+            }
+        });
+
+        // Prevent back button
+        history.pushState(null, null, location.href);
+        window.addEventListener('popstate', () => {
+            if (examStarted) {
+                history.pushState(null, null, location.href);
+            }
+        });
+
+        // Initialize on load
+        window.addEventListener('load', () => {
+            console.log('Proctor Exam System initialized');
+        });
+    </script>
+</body>
+</html>
