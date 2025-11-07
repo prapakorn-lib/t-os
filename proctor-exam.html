@@ -18,6 +18,11 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
+            /* Disable text selection and right-click */
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         .container {
@@ -239,6 +244,15 @@
             width: 100%;
             height: 100%;
         }
+
+        /* Disable drag and drop */
+        img, a {
+            -webkit-user-drag: none;
+            -khtml-user-drag: none;
+            -moz-user-drag: none;
+            -o-user-drag: none;
+            user-drag: none;
+        }
     </style>
 </head>
 <body>
@@ -275,6 +289,8 @@
                 <li>หากออกจากหน้าจอ ระบบจะล็อคการสอบทันที</li>
                 <li>การฝ่าฝืนจะถูกบันทึกและแจ้งเตือนผู้คุมสอบ</li>
                 <li>โปรดปิดแอปพลิเคชันอื่น ๆ ก่อนเริ่มทำข้อสอบ</li>
+                <li><strong>การคลิกขวา, คัดลอก, และตัดข้อความถูกปิดใช้งาน</strong></li>
+                <li><strong>Developer Tools และการดูซอร์สโค้ดถูกปิดใช้งาน</strong></li>
             </ul>
         </div>
 
@@ -432,15 +448,103 @@
             // Monitor visibility change (user switches tabs)
             document.addEventListener('visibilitychange', handleVisibilityChange);
 
-            // Prevent right-click
-            document.addEventListener('contextmenu', (e) => {
-                if (examStarted) {
-                    e.preventDefault();
-                }
-            });
-
             // Monitor keyboard shortcuts
             document.addEventListener('keydown', handleKeyDown);
+        }
+
+        // Disable right-click globally with alert
+        function disableRightClick() {
+            document.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                alert('⚠️ การคลิกขวาถูกปิดใช้งานในระบบสอบออนไลน์');
+                return false;
+            });
+        }
+
+        // Disable text selection and copy/paste/cut
+        function disableTextOperations() {
+            // Prevent copy
+            document.addEventListener('copy', (e) => {
+                e.preventDefault();
+                alert('⚠️ การคัดลอกข้อความถูกปิดใช้งานในระบบสอบออนไลน์');
+                return false;
+            });
+
+            // Prevent cut
+            document.addEventListener('cut', (e) => {
+                e.preventDefault();
+                alert('⚠️ การตัดข้อความถูกปิดใช้งานในระบบสอบออนไลน์');
+                return false;
+            });
+
+            // Prevent drag start
+            document.addEventListener('dragstart', (e) => {
+                e.preventDefault();
+                return false;
+            });
+
+            // Prevent select all via keyboard
+            document.addEventListener('keydown', (e) => {
+                // Prevent Ctrl+A / Cmd+A (select all)
+                if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Prevent Ctrl+C / Cmd+C (copy)
+                if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+                    e.preventDefault();
+                    alert('⚠️ การคัดลอกข้อความถูกปิดใช้งานในระบบสอบออนไลน์');
+                    return false;
+                }
+
+                // Prevent Ctrl+X / Cmd+X (cut)
+                if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
+                    e.preventDefault();
+                    alert('⚠️ การตัดข้อความถูกปิดใช้งานในระบบสอบออนไลน์');
+                    return false;
+                }
+
+                // Prevent Ctrl+V / Cmd+V (paste) - for consistency
+                if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Prevent Ctrl+U / Cmd+U (view source)
+                if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+                    e.preventDefault();
+                    alert('⚠️ การดูซอร์สโค้ดถูกปิดใช้งานในระบบสอบออนไลน์');
+                    return false;
+                }
+
+                // Prevent Ctrl+S / Cmd+S (save)
+                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Prevent F12 / Ctrl+Shift+I / Cmd+Option+I (developer tools)
+                if (e.key === 'F12' ||
+                    ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') ||
+                    ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'i')) {
+                    e.preventDefault();
+                    alert('⚠️ Developer Tools ถูกปิดใช้งานในระบบสอบออนไลน์');
+                    return false;
+                }
+
+                // Prevent Ctrl+Shift+C / Cmd+Option+C (inspect element)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Prevent Ctrl+Shift+J / Cmd+Option+J (console)
+                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
         }
 
         // Handle fullscreen change
@@ -546,6 +650,12 @@
         // Initialize on load
         window.addEventListener('load', () => {
             console.log('Proctor Exam System initialized');
+
+            // Enable security features immediately
+            disableRightClick();
+            disableTextOperations();
+
+            console.log('Security features enabled: Right-click disabled, Text operations disabled');
         });
     </script>
 </body>
