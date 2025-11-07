@@ -18,11 +18,6 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            /* Disable text selection and right-click */
-            user-select: none;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
         }
 
         .container {
@@ -146,37 +141,9 @@
             font-size: 20px;
         }
 
-        .exam-header-right {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
         .timer {
             font-size: 18px;
             font-weight: bold;
-        }
-
-        .finish-exam-btn {
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            background: #2ecc71;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-            white-space: nowrap;
-        }
-
-        .finish-exam-btn:hover {
-            background: #27ae60;
-            transform: scale(1.05);
-        }
-
-        .finish-exam-btn:active {
-            transform: scale(0.98);
         }
 
         .exam-content {
@@ -273,15 +240,6 @@
             height: 100%;
         }
 
-        /* Disable drag and drop */
-        img, a {
-            -webkit-user-drag: none;
-            -khtml-user-drag: none;
-            -moz-user-drag: none;
-            -o-user-drag: none;
-            user-drag: none;
-        }
-
         /* Suspended Screen */
         .suspended-screen {
             display: none;
@@ -376,15 +334,11 @@
             <ul>
                 <li><strong style="color: #d63031;">เวลาสอบ 75 นาที นับถอยหลัง</strong></li>
                 <li>เมื่อเริ่มทำข้อสอบ ระบบจะเข้าสู่โหมดเต็มจอ</li>
-                <li>ห้ามออกจากหน้าจอการสอบ (ห้ามกด Alt+Tab, Cmd+Tab, หรือเปลี่ยนแท็บ)</li>
+                <li><strong>ห้ามสลับไปหน้าต่างอื่นหรือแอปอื่น ระบบจะล็อคการสอบทันที</strong></li>
                 <li>ห้ามออกจากโหมดเต็มจอ (ห้ามกด ESC หรือ F11)</li>
-                <li>หากออกจากหน้าจอ ระบบจะล็อคการสอบทันที</li>
                 <li><strong style="color: #d63031;">ฝ่าฝืนเกิน 3 ครั้ง = ถูกระงับการสอบถาวร</strong></li>
-                <li>การฝ่าฝืนจะถูกบันทึกและแจ้งเตือนผู้คุมสอบ</li>
                 <li>โปรดปิดแอปพลิเคชันอื่น ๆ ก่อนเริ่มทำข้อสอบ</li>
-                <li><strong>การคลิกขวา, คัดลอก, และตัดข้อความถูกปิดใช้งาน</strong></li>
-                <li><strong>Developer Tools และการดูซอร์สโค้ดถูกปิดใช้งาน</strong></li>
-                <li><strong style="color: #2ecc71;">✅ เมื่อทำข้อสอบเสร็จ กดปุ่ม "ส่งข้อสอบและออกจากระบบ" ด้านบนขวา</strong></li>
+                <li><strong style="color: #2ecc71;">✅ ส่งข้อสอบได้ตามปกติผ่านปุ่ม Submit ใน Google Form</strong></li>
             </ul>
         </div>
 
@@ -397,12 +351,7 @@
     <div class="exam-screen" id="examScreen">
         <div class="exam-header">
             <h2>📝 กำลังสอบ - โปรดอย่าออกจากหน้าจอนี้</h2>
-            <div class="exam-header-right">
-                <div class="timer" id="timer">⏱️ เวลา: <span id="timeDisplay">00:00:00</span></div>
-                <button class="finish-exam-btn" onclick="finishExam()">
-                    ✅ ส่งข้อสอบและออกจากระบบ
-                </button>
-            </div>
+            <div class="timer" id="timer">⏱️ เวลา: <span id="timeDisplay">00:00:00</span></div>
         </div>
         <iframe
             id="examFrame"
@@ -614,59 +563,6 @@
             landingPage.style.display = 'block';
         }
 
-        // Finish exam manually (when user clicks submit button)
-        function finishExam() {
-            // ยืนยันการส่งข้อสอบ
-            const confirmed = confirm(
-                '✅ คุณต้องการส่งข้อสอบและออกจากระบบใช่หรือไม่?\n\n' +
-                'หลังจากนี้คุณจะสามารถกด Submit ใน Google Form ได้โดยไม่ถูกตรวจจับ\n\n' +
-                '⚠️ กรุณาแน่ใจว่าคุณตอบข้อสอบครบถ้วนแล้ว'
-            );
-
-            if (!confirmed) {
-                return;
-            }
-
-            // หยุดการตรวจจับ violation
-            examStarted = false;
-
-            // หยุด timer
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-
-            console.log('Exam finished by user. Monitoring disabled.');
-
-            // แสดง alert บอกว่าสามารถส่งข้อสอบได้
-            alert(
-                '✅ ระบบตรวจจับได้ถูกปิดแล้ว!\n\n' +
-                'คุณสามารถกด Submit ใน Google Form ได้เลย\n' +
-                'หลังจากส่งข้อสอบแล้ว หน้าจอจะปิดอัตโนมัติ\n\n' +
-                'ขอบคุณที่ทำข้อสอบค่ะ 🙏'
-            );
-
-            // รอ 3 วินาที แล้วออกจาก fullscreen และกลับหน้า landing
-            setTimeout(() => {
-                // Exit fullscreen
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                } else if (document.webkitExitFullscreen) {
-                    document.webkitExitFullscreen();
-                } else if (document.msExitFullscreen) {
-                    document.msExitFullscreen();
-                }
-
-                // ซ่อนหน้าสอบ แสดงหน้า landing
-                examScreen.classList.remove('active');
-                landingPage.style.display = 'block';
-
-                // แสดงข้อความขอบคุณ
-                setTimeout(() => {
-                    alert('✨ ส่งข้อสอบสำเร็จ!\n\nขอบคุณที่ทำข้อสอบค่ะ');
-                }, 500);
-            }, 3000);
-        }
-
         // Lock screen function
         function lockScreenFunction() {
             if (!examStarted || isSuspended) return;
@@ -770,7 +666,7 @@
             }
         }
 
-        // Initialize monitoring
+        // Initialize monitoring - แบบง่าย เช็คแค่เมาส์ออกจากหน้าต่าง
         function initializeMonitoring() {
             // Monitor fullscreen changes
             document.addEventListener('fullscreenchange', handleFullscreenChange);
@@ -778,109 +674,8 @@
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
             document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
-            // Monitor window blur (user switches to another window/tab)
+            // Monitor window blur (user switches to another window/app)
             window.addEventListener('blur', handleWindowBlur);
-
-            // Monitor visibility change (user switches tabs)
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-
-            // Monitor keyboard shortcuts
-            document.addEventListener('keydown', handleKeyDown);
-        }
-
-        // Disable right-click globally with alert
-        function disableRightClick() {
-            document.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                alert('⚠️ การคลิกขวาถูกปิดใช้งานในระบบสอบออนไลน์');
-                return false;
-            });
-        }
-
-        // Disable text selection and copy/paste/cut
-        function disableTextOperations() {
-            // Prevent copy
-            document.addEventListener('copy', (e) => {
-                e.preventDefault();
-                alert('⚠️ การคัดลอกข้อความถูกปิดใช้งานในระบบสอบออนไลน์');
-                return false;
-            });
-
-            // Prevent cut
-            document.addEventListener('cut', (e) => {
-                e.preventDefault();
-                alert('⚠️ การตัดข้อความถูกปิดใช้งานในระบบสอบออนไลน์');
-                return false;
-            });
-
-            // Prevent drag start
-            document.addEventListener('dragstart', (e) => {
-                e.preventDefault();
-                return false;
-            });
-
-            // Prevent select all via keyboard
-            document.addEventListener('keydown', (e) => {
-                // Prevent Ctrl+A / Cmd+A (select all)
-                if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
-                    e.preventDefault();
-                    return false;
-                }
-
-                // Prevent Ctrl+C / Cmd+C (copy)
-                if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
-                    e.preventDefault();
-                    alert('⚠️ การคัดลอกข้อความถูกปิดใช้งานในระบบสอบออนไลน์');
-                    return false;
-                }
-
-                // Prevent Ctrl+X / Cmd+X (cut)
-                if ((e.ctrlKey || e.metaKey) && e.key === 'x') {
-                    e.preventDefault();
-                    alert('⚠️ การตัดข้อความถูกปิดใช้งานในระบบสอบออนไลน์');
-                    return false;
-                }
-
-                // Prevent Ctrl+V / Cmd+V (paste) - for consistency
-                if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
-                    e.preventDefault();
-                    return false;
-                }
-
-                // Prevent Ctrl+U / Cmd+U (view source)
-                if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
-                    e.preventDefault();
-                    alert('⚠️ การดูซอร์สโค้ดถูกปิดใช้งานในระบบสอบออนไลน์');
-                    return false;
-                }
-
-                // Prevent Ctrl+S / Cmd+S (save)
-                if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-                    e.preventDefault();
-                    return false;
-                }
-
-                // Prevent F12 / Ctrl+Shift+I / Cmd+Option+I (developer tools)
-                if (e.key === 'F12' ||
-                    ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'I') ||
-                    ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'i')) {
-                    e.preventDefault();
-                    alert('⚠️ Developer Tools ถูกปิดใช้งานในระบบสอบออนไลน์');
-                    return false;
-                }
-
-                // Prevent Ctrl+Shift+C / Cmd+Option+C (inspect element)
-                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'C' || e.key === 'c')) {
-                    e.preventDefault();
-                    return false;
-                }
-
-                // Prevent Ctrl+Shift+J / Cmd+Option+J (console)
-                if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'J' || e.key === 'j')) {
-                    e.preventDefault();
-                    return false;
-                }
-            });
         }
 
         // Handle fullscreen change
@@ -897,52 +692,8 @@
         // Handle window blur
         function handleWindowBlur() {
             if (examStarted && !lockScreen.classList.contains('active')) {
-                console.log('Window lost focus');
+                console.log('Window lost focus - user switched to another window/app');
                 lockScreenFunction();
-            }
-        }
-
-        // Handle visibility change
-        function handleVisibilityChange() {
-            if (examStarted && document.hidden && !lockScreen.classList.contains('active')) {
-                console.log('Page visibility changed to hidden');
-                lockScreenFunction();
-            }
-        }
-
-        // Handle keyboard shortcuts
-        function handleKeyDown(e) {
-            if (!examStarted) return;
-
-            // Prevent Alt+Tab (Windows) - can't fully prevent but can detect
-            if (e.altKey && e.key === 'Tab') {
-                e.preventDefault();
-            }
-
-            // Prevent Cmd+Tab (Mac) - can't fully prevent
-            if (e.metaKey && e.key === 'Tab') {
-                e.preventDefault();
-            }
-
-            // Prevent F11 (fullscreen toggle)
-            if (e.key === 'F11') {
-                e.preventDefault();
-            }
-
-            // Prevent ESC (fullscreen exit)
-            if (e.key === 'Escape') {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-
-            // Prevent Ctrl+W, Ctrl+T, Ctrl+N (close/new tab/window)
-            if ((e.ctrlKey || e.metaKey) && (e.key === 'w' || e.key === 't' || e.key === 'n')) {
-                e.preventDefault();
-            }
-
-            // Prevent F5 and Ctrl+R (refresh)
-            if (e.key === 'F5' || ((e.ctrlKey || e.metaKey) && e.key === 'r')) {
-                e.preventDefault();
             }
         }
 
@@ -985,11 +736,7 @@
 
         // Initialize on load
         window.addEventListener('load', () => {
-            console.log('Proctor Exam System initialized');
-
-            // Enable security features immediately
-            disableRightClick();
-            disableTextOperations();
+            console.log('Proctor Exam System initialized (Simple Mode)');
 
             // เช็คสถานะจาก localStorage
             const savedData = loadExamData();
@@ -1005,7 +752,7 @@
                 }
             }
 
-            console.log('Security features enabled: Right-click disabled, Text operations disabled');
+            console.log('Monitoring: Window blur and fullscreen exit only');
         });
     </script>
 </body>
