@@ -334,11 +334,10 @@
             <ul>
                 <li><strong style="color: #d63031;">เวลาสอบ 75 นาที นับถอยหลัง</strong></li>
                 <li>เมื่อเริ่มทำข้อสอบ ระบบจะเข้าสู่โหมดเต็มจอ</li>
-                <li><strong>ห้ามสลับไปหน้าต่างอื่นหรือแอปอื่น ระบบจะล็อคการสอบทันที</strong></li>
-                <li>ห้ามออกจากโหมดเต็มจอ (ห้ามกด ESC หรือ F11)</li>
-                <li><strong style="color: #d63031;">ฝ่าฝืนเกิน 3 ครั้ง = ถูกระงับการสอบถาวร</strong></li>
-                <li>โปรดปิดแอปพลิเคชันอื่น ๆ ก่อนเริ่มทำข้อสอบ</li>
+                <li><strong style="color: #d63031;">ห้ามออกจากโหมดเต็มจอ (ห้ามกด ESC หรือ F11)</strong></li>
+                <li><strong style="color: #d63031;">ออกจาก fullscreen เกิน 3 ครั้ง = ถูกระงับการสอบถาวร</strong></li>
                 <li><strong style="color: #2ecc71;">✅ ส่งข้อสอบได้ตามปกติผ่านปุ่ม Submit ใน Google Form</strong></li>
+                <li><strong style="color: #2ecc71;">✅ Form เปลี่ยนหน้าปกติได้ ไม่ lock</strong></li>
             </ul>
         </div>
 
@@ -666,16 +665,13 @@
             }
         }
 
-        // Initialize monitoring - แบบง่าย เช็คแค่เมาส์ออกจากหน้าต่าง
+        // Initialize monitoring - เช็คแค่ fullscreen exit อย่างเดียว
         function initializeMonitoring() {
-            // Monitor fullscreen changes
+            // Monitor fullscreen changes only
             document.addEventListener('fullscreenchange', handleFullscreenChange);
             document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
             document.addEventListener('mozfullscreenchange', handleFullscreenChange);
             document.addEventListener('MSFullscreenChange', handleFullscreenChange);
-
-            // Monitor window blur (user switches to another window/app)
-            window.addEventListener('blur', handleWindowBlur);
         }
 
         // Handle fullscreen change
@@ -685,14 +681,6 @@
                 !document.mozFullScreenElement &&
                 !document.msFullscreenElement) {
                 console.log('User exited fullscreen');
-                lockScreenFunction();
-            }
-        }
-
-        // Handle window blur
-        function handleWindowBlur() {
-            if (examStarted && !lockScreen.classList.contains('active')) {
-                console.log('Window lost focus - user switched to another window/app');
                 lockScreenFunction();
             }
         }
@@ -736,7 +724,7 @@
 
         // Initialize on load
         window.addEventListener('load', () => {
-            console.log('Proctor Exam System initialized (Simple Mode)');
+            console.log('Proctor Exam System initialized (Minimal Mode)');
 
             // เช็คสถานะจาก localStorage
             const savedData = loadExamData();
@@ -752,7 +740,7 @@
                 }
             }
 
-            console.log('Monitoring: Window blur and fullscreen exit only');
+            console.log('Monitoring: Fullscreen exit only - Form navigation allowed');
         });
     </script>
 </body>
