@@ -253,6 +253,69 @@
             -o-user-drag: none;
             user-drag: none;
         }
+
+        /* Suspended Screen */
+        .suspended-screen {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(135deg, #eb3b5a 0%, #fc5c65 100%);
+            z-index: 10001;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .suspended-screen.active {
+            display: flex;
+        }
+
+        .suspended-content {
+            text-align: center;
+            color: white;
+            max-width: 700px;
+            padding: 50px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+        }
+
+        .suspended-icon {
+            font-size: 120px;
+            margin-bottom: 30px;
+            animation: shake 0.5s infinite;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(-10deg); }
+            75% { transform: rotate(10deg); }
+        }
+
+        .suspended-content h1 {
+            font-size: 42px;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .suspended-content p {
+            font-size: 20px;
+            margin-bottom: 20px;
+            line-height: 1.8;
+        }
+
+        .time-expired {
+            background: #2d3436;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 20px 0;
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -268,7 +331,7 @@
             </div>
             <div class="info-item">
                 <div class="info-label">เวลาในการสอบ:</div>
-                <div class="info-value">ไม่จำกัด</div>
+                <div class="info-value">75 นาที</div>
             </div>
             <div class="info-item">
                 <div class="info-label">ประเภท:</div>
@@ -283,10 +346,12 @@
         <div class="warning-box">
             <h3>⚠️ ข้อควรระวัง</h3>
             <ul>
+                <li><strong style="color: #d63031;">เวลาสอบ 75 นาที นับถอยหลัง</strong></li>
                 <li>เมื่อเริ่มทำข้อสอบ ระบบจะเข้าสู่โหมดเต็มจอ</li>
                 <li>ห้ามออกจากหน้าจอการสอบ (ห้ามกด Alt+Tab, Cmd+Tab, หรือเปลี่ยนแท็บ)</li>
                 <li>ห้ามออกจากโหมดเต็มจอ (ห้ามกด ESC หรือ F11)</li>
                 <li>หากออกจากหน้าจอ ระบบจะล็อคการสอบทันที</li>
+                <li><strong style="color: #d63031;">ฝ่าฝืนเกิน 3 ครั้ง = ถูกระงับการสอบถาวร</strong></li>
                 <li>การฝ่าฝืนจะถูกบันทึกและแจ้งเตือนผู้คุมสอบ</li>
                 <li>โปรดปิดแอปพลิเคชันอื่น ๆ ก่อนเริ่มทำข้อสอบ</li>
                 <li><strong>การคลิกขวา, คัดลอก, และตัดข้อความถูกปิดใช้งาน</strong></li>
@@ -322,35 +387,111 @@
             <p>คุณได้ออกจากหน้าจอการสอบ</p>
             <p>การกระทำนี้ถือเป็นการฝ่าฝืนกฎการสอบ</p>
             <div class="violation-count">
-                การฝ่าฝืน: <span id="violationCount">0</span> ครั้ง
+                การฝ่าฝืน: <span id="violationCount">0</span> / 3 ครั้ง
             </div>
-            <p style="color: #ffa502;">⚠️ การฝ่าฝืนซ้ำอาจส่งผลให้ผลสอบไม่ได้รับการยอมรับ</p>
-            <button class="unlock-btn" onclick="unlockScreen()">
+            <p style="color: #ffa502;" id="lockWarningText">⚠️ การฝ่าฝืนเกิน 3 ครั้งจะถูกระงับการสอบถาวร</p>
+            <button class="unlock-btn" id="unlockBtn" onclick="unlockScreen()">
                 🔓 ปลดล็อคและกลับสู่การสอบ
             </button>
+        </div>
+    </div>
+
+    <!-- Suspended Screen -->
+    <div class="suspended-screen" id="suspendedScreen">
+        <div class="suspended-content">
+            <div class="suspended-icon">🚫</div>
+            <h1>คุณถูกระงับการสอบถาวร!</h1>
+            <p>คุณได้ออกจากหน้าจอการสอบเกิน 3 ครั้ง</p>
+            <p>การกระทำนี้ถือเป็นการฝ่าฝืนกฎการสอบอย่างร้ายแรง</p>
+            <div class="time-expired">
+                การฝ่าฝืนทั้งหมด: <span id="totalViolations">3</span> ครั้ง
+            </div>
+            <p style="font-size: 24px; font-weight: bold;">❌ คุณไม่สามารถทำข้อสอบนี้ต่อได้</p>
+            <p>โปรดติดต่อผู้คุมสอบหรืออาจารย์ผู้สอน</p>
+            <p style="margin-top: 30px; font-size: 16px; opacity: 0.8;">
+                ข้อมูลการฝ่าฝืนได้ถูกบันทึกและจะถูกส่งให้ผู้เกี่ยวข้อง
+            </p>
         </div>
     </div>
 
     <script>
         // Configuration
         const GOOGLE_FORM_URL = 'https://docs.google.com/forms/d/e/1FAIpQLScItl0AinRfFtbqji88v0IIPORWbThDOhhhBIWmOgNoA5eZEA/viewform?usp=header&embedded=true';
+        const EXAM_DURATION_MINUTES = 75; // เวลาสอบ 75 นาที
+        const MAX_VIOLATIONS = 3; // จำนวนการฝ่าฝืนสูงสุด
+        const STORAGE_KEY = 'proctorExamData'; // localStorage key
 
         // State management
         let examStarted = false;
         let violations = 0;
-        let startTime = null;
+        let remainingTime = EXAM_DURATION_MINUTES * 60; // เวลาคงเหลือในวินาที
         let timerInterval = null;
+        let isSuspended = false;
 
         // DOM Elements
         const landingPage = document.getElementById('landingPage');
         const examScreen = document.getElementById('examScreen');
         const lockScreen = document.getElementById('lockScreen');
+        const suspendedScreen = document.getElementById('suspendedScreen');
         const examFrame = document.getElementById('examFrame');
         const violationCountDisplay = document.getElementById('violationCount');
+        const totalViolationsDisplay = document.getElementById('totalViolations');
         const timeDisplay = document.getElementById('timeDisplay');
+        const lockWarningText = document.getElementById('lockWarningText');
+        const unlockBtn = document.getElementById('unlockBtn');
+
+        // LocalStorage Functions
+        function loadExamData() {
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                if (data) {
+                    return JSON.parse(data);
+                }
+            } catch (error) {
+                console.error('Error loading exam data:', error);
+            }
+            return null;
+        }
+
+        function saveExamData() {
+            try {
+                const data = {
+                    violations: violations,
+                    isSuspended: isSuspended,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (error) {
+                console.error('Error saving exam data:', error);
+            }
+        }
+
+        function checkExamStatus() {
+            const data = loadExamData();
+            if (data) {
+                violations = data.violations || 0;
+                isSuspended = data.isSuspended || false;
+
+                if (isSuspended) {
+                    showSuspendedScreen();
+                    return false;
+                }
+
+                if (violations >= MAX_VIOLATIONS) {
+                    suspendExam();
+                    return false;
+                }
+            }
+            return true;
+        }
 
         // Start exam function
         async function startExam() {
+            // เช็คสถานะก่อนเริ่มสอบ
+            if (!checkExamStatus()) {
+                return;
+            }
+
             try {
                 // Hide landing page
                 landingPage.style.display = 'none';
@@ -372,7 +513,6 @@
 
                 // Mark exam as started
                 examStarted = true;
-                startTime = Date.now();
 
                 // Start timer
                 startTimer();
@@ -389,37 +529,146 @@
             }
         }
 
-        // Timer function
+        // Timer function - นับถอยหลัง
         function startTimer() {
-            timerInterval = setInterval(() => {
-                if (startTime) {
-                    const elapsed = Date.now() - startTime;
-                    const hours = Math.floor(elapsed / 3600000);
-                    const minutes = Math.floor((elapsed % 3600000) / 60000);
-                    const seconds = Math.floor((elapsed % 60000) / 1000);
+            updateTimerDisplay();
 
-                    timeDisplay.textContent =
-                        `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            timerInterval = setInterval(() => {
+                remainingTime--;
+
+                if (remainingTime <= 0) {
+                    remainingTime = 0;
+                    endExamTimeUp();
+                }
+
+                updateTimerDisplay();
+
+                // เปลี่ยนสีเตือนเมื่อเหลือเวลาน้อย
+                if (remainingTime <= 300) { // 5 นาทีสุดท้าย
+                    timeDisplay.style.color = '#ff4757';
+                    timeDisplay.style.fontWeight = 'bold';
                 }
             }, 1000);
         }
 
+        function updateTimerDisplay() {
+            const hours = Math.floor(remainingTime / 3600);
+            const minutes = Math.floor((remainingTime % 3600) / 60);
+            const seconds = remainingTime % 60;
+
+            timeDisplay.textContent =
+                `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        function endExamTimeUp() {
+            clearInterval(timerInterval);
+            examStarted = false;
+
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+
+            alert('⏰ หมดเวลาสอบแล้ว!\n\nกรุณาส่งข้อสอบของคุณ (ถ้ายังไม่ได้กด Submit ใน Google Form)');
+
+            // แสดงหน้า landing page
+            examScreen.classList.remove('active');
+            landingPage.style.display = 'block';
+        }
+
         // Lock screen function
         function lockScreenFunction() {
-            if (!examStarted) return;
+            if (!examStarted || isSuspended) return;
 
             violations++;
             violationCountDisplay.textContent = violations;
+
+            // บันทึกลง localStorage
+            saveExamData();
+
+            // เช็คว่าเกินจำนวนที่กำหนดหรือยัง
+            if (violations >= MAX_VIOLATIONS) {
+                suspendExam();
+                return;
+            }
+
+            // แสดงหน้าล็อค
             lockScreen.classList.add('active');
 
-            console.log(`Screen locked! Violation count: ${violations}`);
+            // อัพเดตข้อความเตือน
+            updateLockWarning();
+
+            console.log(`Screen locked! Violation count: ${violations}/${MAX_VIOLATIONS}`);
 
             // Log violation (in production, send to server)
             logViolation('screen_exit');
         }
 
+        // Update lock warning message
+        function updateLockWarning() {
+            const remaining = MAX_VIOLATIONS - violations;
+            if (remaining === 1) {
+                lockWarningText.innerHTML = '🚨 <strong>คำเตือนสุดท้าย!</strong> ฝ่าฝืนอีกครั้งจะถูกระงับการสอบถาวร!';
+                lockWarningText.style.color = '#ff4757';
+                lockWarningText.style.fontSize = '22px';
+                lockWarningText.style.fontWeight = 'bold';
+            } else if (remaining === 2) {
+                lockWarningText.innerHTML = '⚠️ คำเตือนรอบที่ 1: ฝ่าฝืนอีก 2 ครั้งจะถูกระงับการสอบ';
+                lockWarningText.style.color = '#ffa502';
+            }
+        }
+
+        // Suspend exam permanently
+        function suspendExam() {
+            isSuspended = true;
+            examStarted = false;
+
+            // บันทึกสถานะ
+            saveExamData();
+
+            // หยุด timer
+            if (timerInterval) {
+                clearInterval(timerInterval);
+            }
+
+            // แสดงหน้าจอถูกระงับ
+            showSuspendedScreen();
+
+            // Log suspension
+            logViolation('exam_suspended');
+
+            console.log('Exam suspended permanently due to excessive violations');
+        }
+
+        // Show suspended screen
+        function showSuspendedScreen() {
+            // ซ่อนหน้าอื่น ๆ
+            landingPage.style.display = 'none';
+            examScreen.classList.remove('active');
+            lockScreen.classList.remove('active');
+
+            // แสดงหน้าระงับ
+            totalViolationsDisplay.textContent = violations;
+            suspendedScreen.classList.add('active');
+
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+                document.exitFullscreen().catch(() => {});
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
+            }
+        }
+
         // Unlock screen function
         function unlockScreen() {
+            if (isSuspended) return;
+
             lockScreen.classList.remove('active');
 
             // Request fullscreen again
@@ -654,6 +903,20 @@
             // Enable security features immediately
             disableRightClick();
             disableTextOperations();
+
+            // เช็คสถานะจาก localStorage
+            const savedData = loadExamData();
+            if (savedData) {
+                violations = savedData.violations || 0;
+                isSuspended = savedData.isSuspended || false;
+
+                console.log(`Loaded saved data: violations=${violations}, suspended=${isSuspended}`);
+
+                // ถ้าถูกระงับแล้ว แสดงหน้าจอระงับ
+                if (isSuspended) {
+                    showSuspendedScreen();
+                }
+            }
 
             console.log('Security features enabled: Right-click disabled, Text operations disabled');
         });
