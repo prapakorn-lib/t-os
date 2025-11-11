@@ -7,308 +7,173 @@
 
 ### 1.1 ระบุชนิดของสถาปัตยกรรมที่ใช้ในระบบนี้ (10 คะแนน)
 
-**คำถาม:** ระบบที่ให้มาใช้สถาปัตยกรรมแบบใด อธิบายความหมายและลักษณะเด่นของสถาปัตยกรรมนี้
+**คำถามที่ 1:** ระบบที่ให้มาใช้สถาปัตยกรรมแบบใด (2-tier, 3-tier, microservices)?
 
-**หัวข้อที่ต้องตอบ:**
-- [ ] ระบุชนิดของสถาปัตยกรรม (2-tier, 3-tier, microservices, etc.)
-- [ ] อธิบายความหมายของสถาปัตยกรรมที่ระบุ
-- [ ] บอกจำนวน layers/tiers และอธิบายหน้าที่ของแต่ละ layer
-- [ ] เปรียบเทียบกับสถาปัตยกรรมแบบอื่น (เช่น 2-tier vs 3-tier)
+**คำถามที่ 2:** อธิบายความหมายของสถาปัตยกรรมที่ระบุ
 
-**เกณฑ์การให้คะแนน:**
-- ระบุชนิดถูกต้อง (3 คะแนน)
-- อธิบายความหมายชัดเจน (3 คะแนน)
-- บอก layers และหน้าที่ได้ถูกต้อง (2 คะแนน)
-- เปรียบเทียบได้ถูกต้อง (2 คะแนน)
+**คำถามที่ 3:** ระบบนี้มีกี่ layers/tiers และหน้าที่ของแต่ละ layer คืออะไร?
+
+**คำถามที่ 4:** เปรียบเทียบข้อดี-ข้อเสียของสถาปัตยกรรมที่ใช้กับสถาปัตยกรรมแบบ 3-tier
 
 ---
 
 ### 1.2 ระบุเทคโนโลยีที่ใช้ในระบบ (10 คะแนน)
 
-**คำถาม:** ระบุและอธิบายเทคโนโลยีที่ใช้ในแต่ละ layer ของระบบ
+**คำถามที่ 5:** Frontend/Presentation Layer ใช้เทคโนโลยีอะไร และเพราะเหตุใด?
 
-**หัวข้อที่ต้องตอบ:**
-- [ ] Frontend/Presentation Layer: เทคโนโลยีที่ใช้และเหตุผล
-- [ ] Backend/Application Layer: เทคโนโลยีที่ใช้และเหตุผล
-- [ ] Database/Data Layer: เทคโนโลยีที่ใช้และเหตุผล
-- [ ] Container Technology: Docker components ที่ใช้
-- [ ] Network: การเชื่อมต่อระหว่าง services
+**คำถามที่ 6:** Backend/Application Layer ใช้เทคโนโลยีอะไร และเพราะเหตุใด?
 
-**เกณฑ์การให้คะแนน:**
-- ระบุเทคโนโลยีในแต่ละ layer ถูกต้องครบถ้วน (5 คะแนน)
-- อธิบายเหตุผลและข้อดีของการใช้เทคโนโลยีแต่ละตัว (3 คะแนน)
-- อธิบาย Docker components (docker-compose, network, volumes) (2 คะแนน)
+**คำถามที่ 7:** Database Layer ใช้เทคโนโลยีอะไร และเพราะเหตุใด?
+
+**คำถามที่ 8:** อธิบาย Docker components ที่ใช้ในระบบ (images, networks, volumes)
+
+**คำถามที่ 9:** อธิบายการเชื่อมต่อระหว่าง services ในระบบ
 
 ---
 
 ## ส่วนที่ 2: Software Quality Attributes Testing (60 คะแนน)
 
-### 2.1 Performance (ประสิทธิภาพ) - 20 คะแนน
+### 2.1 Performance Testing (ประสิทธิภาพ) - 20 คะแนน
 
-#### มาตรฐานที่กำหนด (Performance Benchmarks):
-1. **Response Time**: API response time ต้องไม่เกิน 200ms สำหรับ simple queries
-2. **Query Performance**: Database query execution time ต้องไม่เกิน 100ms
-3. **Concurrent Users**: ระบบต้องรองรับ concurrent requests ได้อย่างน้อย 10 requests พร้อมกัน
+**มาตรฐานที่กำหนด:**
+- API response time ≤ 200ms
+- Database query time ≤ 100ms
+- รองรับ concurrent requests อย่างน้อย 10 requests พร้อมกัน
 
-#### คำสั่งทดสอบ Performance:
+**คำสั่งทดสอบ:**
 
 ```bash
-# 1. ทดสอบ Response Time ของ API
-echo "=== Testing API Response Time ==="
+# ทดสอบ API Response Time
 for i in {1..10}; do
-  curl -w "\nTime: %{time_total}s\n" -s http://localhost:3000/api/concerts | grep -E "(responseTime|Time:)"
+  curl -w "\nTime: %{time_total}s\n" -s http://localhost:3000/api/concerts
 done
 
-# 2. ทดสอบ Health Check Response
-echo -e "\n=== Testing Health Check ==="
-time curl -s http://localhost:3000/health
-
-# 3. ทดสอบ Concurrent Requests (ใช้ Apache Bench หรือ curl loop)
-echo -e "\n=== Testing Concurrent Requests ==="
-# ติดตั้ง apache2-utils ถ้ายังไม่มี: sudo apt-get install apache2-utils
+# ทดสอบ Concurrent Requests
 ab -n 100 -c 10 http://localhost:3000/api/concerts
 
-# หรือใช้ curl แบบ parallel
-for i in {1..10}; do
-  curl -s http://localhost:3000/api/concerts > /dev/null &
-done
-wait
-echo "Concurrent requests completed"
-
-# 4. ตรวจสอบ Database Query Performance
+# ทดสอบ Database Query
 docker exec concert-database psql -U concert_user -d concert_db -c "\timing on" -c "SELECT * FROM concerts;"
 ```
 
-#### แบบบันทึกผลการทดสอบ Performance:
+**คำถามที่ 10:** บันทึกผลการทดสอบ API Response Time (ค่าเฉลี่ย)
 
-| การทดสอบ | มาตรฐาน | ผลที่ได้ | ผ่าน/ไม่ผ่าน | หมายเหตุ |
-|---------|---------|----------|-------------|----------|
-| API Response Time (avg) | ≤ 200ms | _____ ms | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Health Check Time | ≤ 100ms | _____ ms | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Concurrent Requests (10 req) | Success rate ≥ 95% | _____ % | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Database Query Time | ≤ 100ms | _____ ms | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
+**คำถามที่ 11:** บันทึกผลการทดสอบ Database Query Time
 
-**คำถาม:**
-1. ระบบผ่านมาตรฐาน Performance ที่กำหนดหรือไม่? เพราะอะไร?
-2. หากไม่ผ่าน ควรแก้ไขตรงไหนและอย่างไร? (ให้แนวทางอย่างน้อย 3 ข้อ)
-3. คุณจะปรับปรุง Performance ของระบบอย่างไร?
+**คำถามที่ 12:** บันทึกผลการทดสอบ Concurrent Requests (success rate)
 
-**เกณฑ์การให้คะแนน:**
-- ทดสอบและบันทึกผลถูกต้องครบถ้วน (8 คะแนน)
-- วิเคราะห์ผลและตอบคำถามถูกต้อง (8 คะแนน)
-- เสนอแนวทางแก้ไขหรือปรับปรุงที่เหมาะสม (4 คะแนน)
+**คำถามที่ 13:** ระบบผ่านมาตรฐาน Performance ที่กำหนดหรือไม่? เพราะอะไร?
+
+**คำถามที่ 14:** หากไม่ผ่าน ควรแก้ไขตรงไหนและอย่างไร? (ให้แนวทางอย่างน้อย 3 ข้อ)
+
+**คำถามที่ 15:** คุณจะปรับปรุง Performance ของระบบอย่างไร?
 
 ---
 
-### 2.2 Availability (ความพร้อมใช้งาน) - 20 คะแนน
+### 2.2 Availability Testing (ความพร้อมใช้งาน) - 20 คะแนน
 
-#### มาตรฐานที่กำหนด (Availability Requirements):
-1. **Uptime**: Services ต้องรันได้ต่อเนื่องโดยไม่ crash
-2. **Health Check**: Health endpoint ต้องตอบกลับ status 200 และข้อมูลที่ถูกต้อง
-3. **Auto-restart**: Services ต้อง auto-restart เมื่อเกิดข้อผิดพลาด
-4. **Database Connectivity**: ต้องเชื่อมต่อ database ได้ตลอดเวลา
+**มาตรฐานที่กำหนด:**
+- Services ต้องรันได้ต่อเนื่อง
+- Health endpoint ตอบกลับ status 200
+- Auto-restart เมื่อเกิดข้อผิดพลาด
+- Availability ≥ 99%
 
-#### คำสั่งทดสอบ Availability:
+**คำสั่งทดสอบ:**
 
 ```bash
-# 1. ตรวจสอบ Container Status
-echo "=== Checking Container Status ==="
+# ตรวจสอบ Container Status
 docker-compose ps
 
-# 2. ทดสอบ Health Check
-echo -e "\n=== Testing Health Endpoint ==="
+# ทดสอบ Health Check
 curl -i http://localhost:3000/health
 
-# 3. ตรวจสอบ Restart Policy
-echo -e "\n=== Checking Restart Policies ==="
-docker inspect concert-frontend | grep -A 5 RestartPolicy
-docker inspect concert-database | grep -A 5 RestartPolicy
-
-# 4. ทดสอบ Auto-restart (จำลองการ crash)
-echo -e "\n=== Testing Auto-restart ==="
-echo "Stopping frontend container..."
+# ทดสอบ Auto-restart
 docker stop concert-frontend
 sleep 5
-echo "Checking if container restarted..."
 docker-compose ps
 
-# 5. ทดสอบ Database Health Check
-echo -e "\n=== Testing Database Health ==="
+# ทดสอบ Database Health
 docker exec concert-database pg_isready -U concert_user -d concert_db
 
-# 6. ตรวจสอบ Logs สำหรับ errors
-echo -e "\n=== Checking Container Logs ==="
-docker-compose logs --tail=50 frontend
-docker-compose logs --tail=50 database
-
-# 7. Uptime Test (รัน 1 นาที)
-echo -e "\n=== Continuous Availability Test (60 seconds) ==="
-end=$((SECONDS+60))
-success=0
-fail=0
-while [ $SECONDS -lt $end ]; do
-  if curl -s http://localhost:3000/health > /dev/null; then
-    ((success++))
-  else
-    ((fail++))
-  fi
-  sleep 2
-done
-echo "Success: $success, Failed: $fail"
-echo "Availability: $(echo "scale=2; $success / ($success + $fail) * 100" | bc)%"
+# ทดสอบ Continuous Availability (60 วินาที)
+./scripts/test_availability.sh
 ```
 
-#### แบบบันทึกผลการทดสอบ Availability:
+**คำถามที่ 16:** บันทึกสถานะของ containers ทั้งหมด
 
-| การทดสอบ | มาตรฐาน | ผลที่ได้ | ผ่าน/ไม่ผ่าน | หมายเหตุ |
-|---------|---------|----------|-------------|----------|
-| Container Status | All running | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Health Check Response | Status 200 | HTTP _____ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Restart Policy | unless-stopped | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Auto-restart Test | Restarts automatically | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Database Health | Ready | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Continuous Availability | ≥ 99% | _____ % | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
+**คำถามที่ 17:** บันทึกผลการทดสอบ Health Check (HTTP status code และ response time)
 
-**คำถาม:**
-1. ระบบมีความพร้อมใช้งานตามมาตรฐานหรือไม่?
-2. Restart policy ที่ใช้คืออะไร และเหมาะสมกับระบบหรือไม่?
-3. หากต้องการเพิ่มความพร้อมใช้งานเป็น 99.9% ควรทำอย่างไร?
+**คำถามที่ 18:** Restart policy ที่ระบบใช้คืออะไร?
 
-**เกณฑ์การให้คะแนน:**
-- ทดสอบและบันทึกผลถูกต้องครบถ้วน (8 คะแนน)
-- วิเคราะห์ผลและตอบคำถามถูกต้อง (8 คะแนน)
-- เสนอแนวทางเพิ่ม availability ที่เหมาะสม (4 คะแนน)
+**คำถามที่ 19:** Container restart อัตโนมัติหลังจาก stop หรือไม่?
+
+**คำถามที่ 20:** บันทึก Availability percentage จากการทดสอบ 60 วินาที
+
+**คำถามที่ 21:** ระบบมีความพร้อมใช้งานตามมาตรฐานหรือไม่?
+
+**คำถามที่ 22:** Restart policy ที่ใช้เหมาะสมกับระบบหรือไม่? เพราะอะไร?
+
+**คำถามที่ 23:** หากต้องการเพิ่มความพร้อมใช้งานเป็น 99.9% ควรทำอย่างไร?
 
 ---
 
-### 2.3 Reliability (ความน่าเชื่อถือ) - 20 คะแนน
+### 2.3 Reliability Testing (ความน่าเชื่อถือ) - 20 คะแนน
 
-#### มาตรฐานที่กำหนด (Reliability Requirements):
-1. **Data Integrity**: Transaction ต้องทำงานแบบ ACID compliant
-2. **Concurrent Booking**: ป้องกัน double booking (race condition)
-3. **Data Consistency**: ข้อมูลต้องสอดคล้องกันระหว่าง tables
-4. **Error Handling**: ระบบต้องจัดการ error ได้อย่างเหมาะสม
+**มาตรฐานที่กำหนด:**
+- Transaction ทำงานแบบ ACID compliant
+- ป้องกัน double booking
+- Data consistency ระหว่าง tables
+- Error handling ที่เหมาะสม
 
-#### คำสั่งทดสอบ Reliability:
+**คำสั่งทดสอบ:**
 
 ```bash
-# 1. ทดสอบ Transaction (ACID Properties)
-echo "=== Testing Transaction Integrity ==="
+# ทดสอบ Transaction Integrity
 docker exec concert-database psql -U concert_user -d concert_db << EOF
 BEGIN;
--- Try to book more tickets than available
-UPDATE concerts SET sold_tickets = sold_tickets + 100 WHERE id = 1;
-SELECT concert_name, total_tickets, sold_tickets,
-       (total_tickets - sold_tickets) as available
-FROM concerts WHERE id = 1;
--- This should fail due to constraint
+UPDATE concerts SET sold_tickets = total_tickets + 1000 WHERE id = 1;
 ROLLBACK;
-SELECT 'Transaction rolled back successfully' as result;
 EOF
 
-# 2. ทดสอบ Data Integrity Constraints
-echo -e "\n=== Testing Data Integrity ==="
-docker exec concert-database psql -U concert_user -d concert_db << EOF
--- Try to insert invalid data (negative tickets)
-INSERT INTO bookings (concert_id, customer_name, customer_email, quantity)
-VALUES (1, 'Test User', 'test@test.com', -1);
-EOF
-
-# 3. ทดสอบ Concurrent Booking (Race Condition)
-echo -e "\n=== Testing Concurrent Booking ==="
-# สร้างไฟล์ test script
-cat > /tmp/test_booking.sh << 'SCRIPT'
-#!/bin/bash
-curl -X POST http://localhost:3000/api/book \
-  -H "Content-Type: application/json" \
-  -d '{
-    "concert_id": 5,
-    "customer_name": "Test User '$1'",
-    "customer_email": "test'$1'@email.com",
-    "quantity": 1
-  }' &
-SCRIPT
-
-chmod +x /tmp/test_booking.sh
-
-# รัน 5 bookings พร้อมกัน สำหรับคอนเสิร์ตที่เหลือ 1 ตั๋ว
+# ทดสอบ Concurrent Booking
 for i in {1..5}; do
-  /tmp/test_booking.sh $i
+  curl -X POST http://localhost:3000/api/book \
+    -H "Content-Type: application/json" \
+    -d '{"concert_id": 5, "customer_name": "User '$i'",
+         "customer_email": "user'$i'@test.com", "quantity": 1}' &
 done
 wait
 
-# ตรวจสอบผลลัพธ์
-echo -e "\n=== Checking Results ==="
-curl -s http://localhost:3000/api/concerts/5 | grep -E "(available_tickets|sold_tickets)"
-
-# 4. ทดสอบ Data Consistency
-echo -e "\n=== Testing Data Consistency ==="
+# ทดสอบ Data Consistency
 docker exec concert-database psql -U concert_user -d concert_db << EOF
--- ตรวจสอบว่า sold_tickets ตรงกับจำนวน bookings
-SELECT
-  c.id,
-  c.concert_name,
-  c.sold_tickets,
-  COALESCE(SUM(b.quantity), 0) as total_booked,
-  CASE
-    WHEN c.sold_tickets = COALESCE(SUM(b.quantity), 0)
-    THEN 'CONSISTENT'
-    ELSE 'INCONSISTENT'
-  END as status
+SELECT c.id, c.sold_tickets, COALESCE(SUM(b.quantity), 0) as total_booked
 FROM concerts c
 LEFT JOIN bookings b ON c.id = b.concert_id
-GROUP BY c.id, c.concert_name, c.sold_tickets;
+GROUP BY c.id, c.sold_tickets;
 EOF
 
-# 5. ทดสอบ Error Handling
-echo -e "\n=== Testing Error Handling ==="
-# ลอง book คอนเสิร์ตที่ไม่มี
-curl -i -X POST http://localhost:3000/api/book \
+# ทดสอบ Error Handling
+curl -X POST http://localhost:3000/api/book \
   -H "Content-Type: application/json" \
-  -d '{
-    "concert_id": 999,
-    "customer_name": "Test User",
-    "customer_email": "test@email.com",
-    "quantity": 1
-  }'
-
-# ลอง book เกินจำนวนที่มี
-curl -i -X POST http://localhost:3000/api/book \
-  -H "Content-Type: application/json" \
-  -d '{
-    "concert_id": 1,
-    "customer_name": "Test User",
-    "customer_email": "test@email.com",
-    "quantity": 99999
-  }'
-
-# 6. ทดสอบ Database Backup/Recovery
-echo -e "\n=== Testing Data Persistence ==="
-echo "Creating backup..."
-docker exec concert-database pg_dump -U concert_user concert_db > /tmp/backup.sql
-echo "Backup created: $(wc -l < /tmp/backup.sql) lines"
+  -d '{"concert_id": 999, "customer_name": "Test", "customer_email": "test@test.com", "quantity": 1}'
 ```
 
-#### แบบบันทึกผลการทดสอบ Reliability:
+**คำถามที่ 24:** บันทึกผลการทดสอบ Transaction Rollback (rollback สำเร็จหรือไม่)
 
-| การทดสอบ | มาตรฐาน | ผลที่ได้ | ผ่าน/ไม่ผ่าน | หมายเหตุ |
-|---------|---------|----------|-------------|----------|
-| Transaction Rollback | Works correctly | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Data Constraints | Enforced properly | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Concurrent Booking | No double booking | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Data Consistency | All data consistent | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Error Handling | Proper error messages | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
-| Data Persistence | Backup successful | _______ | ⬜ ผ่าน / ⬜ ไม่ผ่าน | |
+**คำถามที่ 25:** บันทึกผลการทดสอบ Concurrent Booking (มีกี่ booking ที่สำเร็จ ควรเป็น 1 เท่านั้น)
 
-**คำถาม:**
-1. ระบบป้องกัน race condition ในการ book ตั๋วได้หรือไม่? อธิบายกลไก
-2. ACID properties ใดบ้างที่ระบบรองรับ? ยกตัวอย่างประกอบ
-3. หากพบ data inconsistency ควรแก้ไขอย่างไร?
+**คำถามที่ 26:** บันทึกผลการตรวจสอบ Data Consistency (มี inconsistency หรือไม่)
 
-**เกณฑ์การให้คะแนน:**
-- ทดสอบและบันทึกผลถูกต้องครบถ้วน (8 คะแนน)
-- วิเคราะห์ผลและตอบคำถามถูกต้อง (8 คะแนน)
-- เสนอแนวทางแก้ไขปัญหาที่เหมาะสม (4 คะแนน)
+**คำถามที่ 27:** บันทึก error message จากการ book concert ที่ไม่มี
+
+**คำถามที่ 28:** ระบบป้องกัน race condition ในการ book ตั๋วได้หรือไม่? อธิบายกลไก
+
+**คำถามที่ 29:** ACID properties ใดบ้างที่ระบบรองรับ? ยกตัวอย่างประกอบ
+- Atomicity:
+- Consistency:
+- Isolation:
+- Durability:
+
+**คำถามที่ 30:** หากพบ data inconsistency ควรแก้ไขอย่างไร?
 
 ---
 
@@ -316,95 +181,144 @@ echo "Backup created: $(wc -l < /tmp/backup.sql) lines"
 
 ### 3.1 วิเคราะห์จุดอ่อนของสถาปัตยกรรมปัจจุบัน (10 คะแนน)
 
-**คำถาม:**
-1. ระบุจุดอ่อนของสถาปัตยกรรม 2-tier ที่ใช้ในระบบนี้ (อย่างน้อย 3 ข้อ)
-2. ปัญหาใดบ้างที่อาจเกิดขึ้นเมื่อระบบมีผู้ใช้งานเพิ่มขึ้นมาก?
-3. เปรียบเทียบข้อดี-ข้อเสียกับสถาปัตยกรรมแบบอื่น
+**คำถามที่ 31:** ระบุจุดอ่อนของสถาปัตยกรรม 2-tier ที่ใช้ในระบบนี้ (อย่างน้อย 3 ข้อ)
 
-**เกณฑ์การให้คะแนน:**
-- ระบุจุดอ่อนได้ถูกต้องและชัดเจน (4 คะแนน)
-- วิเคราะห์ปัญหาที่อาจเกิดได้ครบถ้วน (3 คะแนน)
-- เปรียบเทียบได้ถูกต้อง (3 คะแนน)
+**คำถามที่ 32:** ปัญหาใดบ้างที่อาจเกิดขึ้นเมื่อระบบมีผู้ใช้งานเพิ่มขึ้นมาก?
+- Scalability issues:
+- Performance issues:
+- Maintenance issues:
+
+**คำถามที่ 33:** เปรียบเทียบข้อดี-ข้อเสียของ 2-tier กับ 3-tier architecture
+- ข้อดีของ 2-tier:
+- ข้อเสียของ 2-tier:
+- ข้อดีของ 3-tier:
+- ข้อเสียของ 3-tier:
 
 ---
 
 ### 3.2 เสนอแนวทางปรับปรุงระบบ (10 คะแนน)
 
-**คำถาม:**
-1. หากต้องการอัพเกรดเป็น 3-tier architecture ควรทำอย่างไร?
-2. เสนอแนวทางเพิ่ม scalability ของระบบ
-3. เสนอแนวทางเพิ่ม security ของระบบ
+**คำถามที่ 34:** หากต้องการอัพเกรดเป็น 3-tier architecture ควรทำอย่างไร? (อธิบายขั้นตอน)
 
-**เกณฑ์การให้คะแนน:**
-- เสนอแนวทาง upgrade เป็น 3-tier ได้ถูกต้อง (4 คะแนน)
-- เสนอแนวทางเพิ่ม scalability เหมาะสม (3 คะแนน)
-- เสนอแนวทางเพิ่ม security เหมาะสม (3 คะแนน)
+**คำถามที่ 35:** เสนอแนวทางเพิ่ม Scalability ของระบบ (อย่างน้อย 3 วิธี)
+- วิธีที่ 1:
+- วิธีที่ 2:
+- วิธีที่ 3:
+
+**คำถามที่ 36:** เสนอแนวทางเพิ่ม Security ของระบบ (อย่างน้อย 5 ข้อ)
+- Frontend security:
+- Backend security:
+- Database security:
+- Network security:
+- Container security:
 
 ---
 
 ## สรุปคะแนน
 
-| หมวด | คะแนนเต็ม | คะแนนที่ได้ |
-|------|----------|------------|
-| ส่วนที่ 1: ความเข้าใจสถาปัตยกรรม | 20 | |
-| ส่วนที่ 2.1: Performance Testing | 20 | |
-| ส่วนที่ 2.2: Availability Testing | 20 | |
-| ส่วนที่ 2.3: Reliability Testing | 20 | |
-| ส่วนที่ 3: การปรับปรุงระบบ | 20 | |
-| **รวม** | **100** | |
+**คะแนนเต็ม: 100 คะแนน**
+
+- ส่วนที่ 1: ความเข้าใจสถาปัตยกรรม (คำถามที่ 1-9) = 20 คะแนน
+- ส่วนที่ 2.1: Performance Testing (คำถามที่ 10-15) = 20 คะแนน
+- ส่วนที่ 2.2: Availability Testing (คำถามที่ 16-23) = 20 คะแนน
+- ส่วนที่ 2.3: Reliability Testing (คำถามที่ 24-30) = 20 คะแนน
+- ส่วนที่ 3: การปรับปรุงระบบ (คำถามที่ 31-36) = 20 คะแนน
 
 ---
 
-## หมายเหตุสำหรับผู้สอบ
+## เกณฑ์การให้คะแนนแต่ละคำถาม
 
-1. ให้รัน `docker-compose up -d` ก่อนทำการทดสอบ
-2. ตรวจสอบให้แน่ใจว่า services ทั้งหมดรันปกติ (`docker-compose ps`)
-3. บันทึกผลการทดสอบทุกครั้งด้วย screenshot หรือ log file
-4. เมื่อทดสอบเสร็จให้รัน `docker-compose down` เพื่อหยุด services
-5. หากมีปัญหาในการทดสอบ ให้ดู logs ด้วย `docker-compose logs`
+### ส่วนที่ 1 (คำถามละ 2-3 คะแนน)
+- คำถาม 1-4: คำถามละ 2-3 คะแนน (รวม 10 คะแนน)
+- คำถาม 5-9: คำถามละ 2 คะแนน (รวม 10 คะแนน)
+
+### ส่วนที่ 2.1 Performance (รวม 20 คะแนน)
+- คำถาม 10-12: บันทึกผลถูกต้อง คำถามละ 2 คะแนน (6 คะแนน)
+- คำถาม 13: วิเคราะห์ผ่าน/ไม่ผ่าน (4 คะแนน)
+- คำถาม 14: เสนอแนวทางแก้ไข 3 ข้อ (6 คะแนน)
+- คำถาม 15: เสนอแนวทางปรับปรุง (4 คะแนน)
+
+### ส่วนที่ 2.2 Availability (รวม 20 คะแนน)
+- คำถาม 16-20: บันทึกผลถูกต้อง คำถามละ 2 คะแนน (10 คะแนน)
+- คำถาม 21-22: วิเคราะห์ผล คำถามละ 3 คะแนน (6 คะแนน)
+- คำถาม 23: เสนอแนวทาง (4 คะแนน)
+
+### ส่วนที่ 2.3 Reliability (รวม 20 คะแนน)
+- คำถาม 24-27: บันทึกผลถูกต้อง คำถามละ 2 คะแนน (8 คะแนน)
+- คำถาม 28: อธิบายกลไกป้องกัน race condition (4 คะแนน)
+- คำถาม 29: อธิบาย ACID properties (4 คะแนน)
+- คำถาม 30: เสนอแนวทางแก้ไข (4 คะแนน)
+
+### ส่วนที่ 3 การปรับปรุงระบบ (รวม 20 คะแนน)
+- คำถาม 31: ระบุจุดอ่อน 3 ข้อ (4 คะแนน)
+- คำถาม 32: วิเคราะห์ปัญหา (3 คะแนน)
+- คำถาม 33: เปรียบเทียบ architecture (3 คะแนน)
+- คำถาม 34: แผน upgrade เป็น 3-tier (4 คะแนน)
+- คำถาม 35: เสนอแนวทางเพิ่ม scalability (3 คะแนน)
+- คำถาม 36: เสนอแนวทางเพิ่ม security (3 คะแนน)
 
 ---
 
-## คำแนะนำเพิ่มเติม
+## หมายเหตุสำหรับผู้ตรวจ
 
-### การติดตั้ง Tools ที่จำเป็น
+1. การทดสอบใน Part 2 ต้องมีหลักฐาน (screenshots หรือ log output)
+2. คำตอบที่ดีควรมีการวิเคราะห์และให้เหตุผลประกอบ
+3. คะแนนเต็มต้องแสดงความเข้าใจลึกและให้รายละเอียดครบถ้วน
+4. คะแนนผ่าน: 60 คะแนนขึ้นไป (60%)
 
-```bash
-# Apache Bench (สำหรับ load testing)
-sudo apt-get install apache2-utils
+---
 
-# PostgreSQL Client (สำหรับทดสอบ database)
-sudo apt-get install postgresql-client
+## เฉลยคำถามสำหรับผู้สอน
 
-# jq (สำหรับ parse JSON)
-sudo apt-get install jq
+**คำถามที่ 1:** 2-Tier Architecture (Client-Server)
 
-# curl (มักมีติดตั้งอยู่แล้ว)
-sudo apt-get install curl
-```
+**คำถามที่ 2:** สถาปัตยกรรมที่แบ่งระบบออกเป็น 2 ชั้น คือ Frontend (Client) และ Database (Server) โดย business logic อยู่ที่ Frontend
 
-### การดู Logs
+**คำถามที่ 3:**
+- Tier 1: Frontend (Node.js + Express) - รับคำร้อง, business logic, presentation
+- Tier 2: Database (PostgreSQL) - จัดเก็บข้อมูล
 
-```bash
-# ดู logs ของ frontend
-docker-compose logs -f frontend
+**คำถามที่ 4:**
+- 2-tier: ง่าย, พัฒนาเร็ว, แต่ scale ยาก, maintain ยาก
+- 3-tier: แยก business logic ออกมา, scale ง่าย, แต่ซับซ้อนกว่า
 
-# ดู logs ของ database
-docker-compose logs -f database
+**คำถามที่ 5:** Node.js + Express - เบา, รวดเร็ว, JavaScript ทั้งระบบ
 
-# ดู logs ทั้งหมด
-docker-compose logs -f
-```
+**คำถามที่ 6:** รวมอยู่ใน Frontend (Express.js) - ทำ REST API
 
-### การ Restart Services
+**คำถามที่ 7:** PostgreSQL - Open source, ACID compliant, รองรับ transaction
 
-```bash
-# Restart service เดียว
-docker-compose restart frontend
+**คำถามที่ 8:** Docker Compose, Networks (bridge), Volumes (persistent data)
 
-# Restart ทั้งหมด
-docker-compose restart
+**คำถามที่ 9:** ผ่าน Docker network, Frontend เชื่อม Database ด้วย service name
 
-# Stop และ Start ใหม่
-docker-compose down && docker-compose up -d
-```
+**คำถามที่ 28:** ใช่, ใช้ SELECT FOR UPDATE (row-level locking) ใน transaction
+
+**คำถามที่ 29:**
+- A: Transaction rollback เมื่อ error
+- C: Constraints ป้องกันข้อมูลผิดพลาด
+- I: Row-level locking
+- D: Volume persistent data
+
+**คำถามที่ 31:**
+1. Business logic ผสม presentation logic
+2. Scale ยาก (ต้อง scale ทั้ง frontend)
+3. Maintenance ยาก
+4. Security ระดับต่ำกว่า 3-tier
+
+**คำถามที่ 34:** แยก API layer ออกมาเป็น Tier กลาง ระหว่าง Frontend กับ Database
+
+**คำถามที่ 35:**
+1. Load Balancer
+2. Database Replication
+3. Horizontal scaling with multiple containers
+4. Caching (Redis)
+
+**คำถามที่ 36:**
+1. HTTPS/TLS
+2. JWT Authentication
+3. Rate limiting
+4. Input validation
+5. Database encryption
+6. Docker secrets
+7. Network policies
