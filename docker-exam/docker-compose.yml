@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # Frontend Service (Tier 1)
+  frontend:
+    build: ./frontend
+    container_name: concert-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - DB_HOST=database
+      - DB_USER=concert_user
+      - DB_PASSWORD=concert_pass
+      - DB_NAME=concert_db
+      - DB_PORT=5432
+    depends_on:
+      - database
+    networks:
+      - concert-network
+    restart: unless-stopped
+
+  # Database Service (Tier 2)
+  database:
+    image: postgres:15-alpine
+    container_name: concert-database
+    environment:
+      - POSTGRES_USER=concert_user
+      - POSTGRES_PASSWORD=concert_pass
+      - POSTGRES_DB=concert_db
+    volumes:
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - concert-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U concert_user -d concert_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  concert-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

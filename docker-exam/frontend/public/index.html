@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจองตั๋วคอนเสิร์ต - Concert Ticket Booking System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .concerts-section, .bookings-section {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .concert-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .concert-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .concert-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .concert-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .concert-info {
+            color: #666;
+            margin: 5px 0;
+        }
+
+        .available {
+            color: #28a745;
+            font-weight: bold;
+        }
+
+        .sold-out {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        .book-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            font-size: 1em;
+        }
+
+        .book-btn:hover {
+            background: #5568d3;
+        }
+
+        .book-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #667eea;
+            color: white;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .submit-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .submit-btn:hover {
+            background: #218838;
+        }
+
+        .response-time {
+            color: #666;
+            font-size: 0.9em;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        .health-status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .unhealthy {
+            background: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎵 ระบบจองตั๋วคอนเสิร์ต</h1>
+            <p>Concert Ticket Booking System - 2-Tier Architecture</p>
+            <div id="health-status" class="health-status"></div>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalConcerts">0</div>
+                <div class="stat-label">คอนเสิร์ตทั้งหมด</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalTicketsSold">0</div>
+                <div class="stat-label">ตั๋วที่ขายแล้ว</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalBookings">0</div>
+                <div class="stat-label">การจองทั้งหมด</div>
+            </div>
+        </div>
+
+        <div class="concerts-section">
+            <h2>คอนเสิร์ตที่เปิดจอง</h2>
+            <div id="concerts" class="concert-grid"></div>
+            <div class="response-time" id="concertsResponseTime"></div>
+        </div>
+
+        <div class="bookings-section">
+            <h2>รายการจองล่าสุด</h2>
+            <div id="bookings"></div>
+            <div class="response-time" id="bookingsResponseTime"></div>
+        </div>
+    </div>
+
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>จองตั๋วคอนเสิร์ต</h2>
+            <form id="bookingForm">
+                <input type="hidden" id="concertId" name="concert_id">
+
+                <div class="form-group">
+                    <label>คอนเสิร์ต:</label>
+                    <input type="text" id="concertName" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label>ชื่อผู้จอง:</label>
+                    <input type="text" id="customerName" name="customer_name" required>
+                </div>
+
+                <div class="form-group">
+                    <label>อีเมล:</label>
+                    <input type="email" id="customerEmail" name="customer_email" required>
+                </div>
+
+                <div class="form-group">
+                    <label>จำนวนตั๋ว:</label>
+                    <input type="number" id="quantity" name="quantity" min="1" required>
+                </div>
+
+                <button type="submit" class="submit-btn">ยืนยันการจอง</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let currentConcert = null;
+
+        // Check health status
+        async function checkHealth() {
+            try {
+                const response = await fetch('/health');
+                const data = await response.json();
+                const statusDiv = document.getElementById('health-status');
+                if (data.status === 'healthy') {
+                    statusDiv.className = 'health-status healthy';
+                    statusDiv.textContent = `✓ ระบบทำงานปกติ (${data.timestamp})`;
+                } else {
+                    statusDiv.className = 'health-status unhealthy';
+                    statusDiv.textContent = '✗ ระบบมีปัญหา';
+                }
+            } catch (error) {
+                const statusDiv = document.getElementById('health-status');
+                statusDiv.className = 'health-status unhealthy';
+                statusDiv.textContent = '✗ ไม่สามารถเชื่อมต่อกับระบบได้';
+            }
+        }
+
+        // Load statistics
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                document.getElementById('totalConcerts').textContent = data.total_concerts || 0;
+                document.getElementById('totalTicketsSold').textContent = data.total_tickets_sold || 0;
+                document.getElementById('totalBookings').textContent = data.total_bookings || 0;
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+
+        // Load concerts
+        async function loadConcerts() {
+            try {
+                const response = await fetch('/api/concerts');
+                const result = await response.json();
+                const concerts = result.data;
+                const responseTime = result.responseTime;
+
+                document.getElementById('concertsResponseTime').textContent =
+                    `เวลาในการตอบสนอง: ${responseTime}`;
+
+                const concertsDiv = document.getElementById('concerts');
+                concertsDiv.innerHTML = concerts.map(concert => `
+                    <div class="concert-card">
+                        <div class="concert-name">${concert.concert_name}</div>
+                        <div class="concert-info">📅 ${new Date(concert.concert_date).toLocaleDateString('th-TH')}</div>
+                        <div class="concert-info">📍 ${concert.location}</div>
+                        <div class="concert-info">💰 ${concert.price.toLocaleString()} บาท</div>
+                        <div class="concert-info ${concert.available_tickets > 0 ? 'available' : 'sold-out'}">
+                            ${concert.available_tickets > 0
+                                ? `เหลือ ${concert.available_tickets} ใบ`
+                                : 'ขายหมดแล้ว'}
+                        </div>
+                        <button class="book-btn"
+                                onclick="openBookingModal(${concert.id}, '${concert.concert_name}', ${concert.available_tickets})"
+                                ${concert.available_tickets === 0 ? 'disabled' : ''}>
+                            ${concert.available_tickets > 0 ? 'จองตั๋ว' : 'เต็มแล้ว'}
+                        </button>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading concerts:', error);
+            }
+        }
+
+        // Load bookings
+        async function loadBookings() {
+            try {
+                const response = await fetch('/api/bookings');
+                const result = await response.json();
+                const bookings = result.data;
+                const responseTime = result.responseTime;
+
+                document.getElementById('bookingsResponseTime').textContent =
+                    `เวลาในการตอบสนอง: ${responseTime}`;
+
+                const bookingsDiv = document.getElementById('bookings');
+
+                if (bookings.length === 0) {
+                    bookingsDiv.innerHTML = '<p>ยังไม่มีการจอง</p>';
+                    return;
+                }
+
+                bookingsDiv.innerHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>คอนเสิร์ต</th>
+                                <th>ผู้จอง</th>
+                                <th>อีเมล</th>
+                                <th>จำนวน</th>
+                                <th>วันที่จอง</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${bookings.map(booking => `
+                                <tr>
+                                    <td>${booking.id}</td>
+                                    <td>${booking.concert_name}</td>
+                                    <td>${booking.customer_name}</td>
+                                    <td>${booking.customer_email}</td>
+                                    <td>${booking.quantity}</td>
+                                    <td>${new Date(booking.booking_date).toLocaleString('th-TH')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                `;
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+            }
+        }
+
+        // Open booking modal
+        function openBookingModal(concertId, concertName, available) {
+            currentConcert = { id: concertId, name: concertName, available: available };
+            document.getElementById('concertId').value = concertId;
+            document.getElementById('concertName').value = concertName;
+            document.getElementById('quantity').max = available;
+            document.getElementById('bookingModal').style.display = 'block';
+        }
+
+        // Close modal
+        document.querySelector('.close').onclick = function() {
+            document.getElementById('bookingModal').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('bookingModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Submit booking
+        document.getElementById('bookingForm').onsubmit = async function(e) {
+            e.preventDefault();
+
+            const formData = {
+                concert_id: parseInt(document.getElementById('concertId').value),
+                customer_name: document.getElementById('customerName').value,
+                customer_email: document.getElementById('customerEmail').value,
+                quantity: parseInt(document.getElementById('quantity').value)
+            };
+
+            try {
+                const response = await fetch('/api/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    alert(`จองตั๋วสำเร็จ!\nหมายเลขการจอง: ${result.booking.id}\nเวลาในการประมวลผล: ${result.responseTime}`);
+                    document.getElementById('bookingModal').style.display = 'none';
+                    document.getElementById('bookingForm').reset();
+                    loadConcerts();
+                    loadBookings();
+                    loadStats();
+                } else {
+                    alert('เกิดข้อผิดพลาด: ' + result.error);
+                }
+            } catch (error) {
+                alert('เกิดข้อผิดพลาดในการจอง: ' + error.message);
+            }
+        };
+
+        // Initial load
+        checkHealth();
+        loadStats();
+        loadConcerts();
+        loadBookings();
+
+        // Auto refresh
+        setInterval(() => {
+            checkHealth();
+            loadStats();
+            loadConcerts();
+            loadBookings();
+        }, 30000); // Refresh every 30 seconds
+    </script>
+</body>
+</html>

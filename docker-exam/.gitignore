@@ -1,0 +1,34 @@
+# Node modules
+node_modules/
+npm-debug.log*
+
+# Docker
+.dockerignore
+
+# Test results
+test_results/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment variables
+.env
+.env.local
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database backups
+*.sql
+!database/init.sql
+backup/
