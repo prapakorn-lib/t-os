@@ -1,0 +1,32 @@
+# ─────────────────────────────────────────────
+#  .gitattributes — OS Lab Exam Repository
+#  บังคับ line endings ให้ถูกต้องทุก OS
+# ─────────────────────────────────────────────
+
+# Default: ให้ Git จัดการ line endings อัตโนมัติ
+* text=auto
+
+# Shell scripts — ต้องเป็น LF เสมอ (Linux/Docker)
+*.sh text eol=lf
+
+# Python scripts — LF
+*.py text eol=lf
+
+# Docker files — LF
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+
+# YAML/config — LF
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Markdown / text docs — auto (แล้วแต่ OS)
+*.md text eol=lf
+*.txt text eol=lf
+
+# Word / PDF — binary (ห้าม Git แตะ)
+*.docx binary
+*.pdf binary
+*.png binary
+*.jpg binary
+*.jpeg binary
